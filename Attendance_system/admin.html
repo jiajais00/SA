@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef1f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+        h2 { color: #333; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th { background-color: #2c3e50; color: white; }
+        .success { color: black; font-weight: bold; }
+        .late { color: black; font-weight: bold; }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .button:hover { transform: scale(1.05); }
+        .download-btn { background-color: #007bff; color: white; }
+        .print-btn { background-color: #28a745; color: white; }
+        .back-btn { background-color: #212529; color: white; }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .back-button {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            background: #007bff;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        .month-select {
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="adminhomepage.html" class="back-button">Back</a>
+        <div style="flex-grow: 1; text-align: center;">
+            <h1>Efficient Attendance Management</h1>
+            <p>"Track your workday with ease – Quick and accurate check-ins and check-outs at the click of a button."</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <label for="month-select">Select Month:</label>
+        <select id="month-select" class="month-select" onchange="loadReport()">
+            <option value="0">January</option>
+            <option value="1">February</option>
+            <option value="2">March</option>
+            <option value="3">April</option>
+            <option value="4">May</option>
+            <option value="5">June</option>
+            <option value="6">July</option>
+            <option value="7">August</option>
+            <option value="8">September</option>
+            <option value="9">October</option>
+            <option value="10">November</option>
+            <option value="11">December</option>
+        </select>
+
+        <h2>Employee Attendance Report</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee Name</th>
+                    <th>Check-in Time</th>
+                    <th>Check-out Time</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="reportTable"></tbody>
+        </table>
+        <button class="button download-btn" onclick="downloadPDF()">Download PDF</button>
+        <button class="button print-btn" onclick="window.print()">Print</button>
+    </div>
+
+    <script>
+        function loadReport() {
+            let selectedMonth = document.getElementById("month-select").value;
+            let checkInData = JSON.parse(localStorage.getItem('checkIns')) || [];
+            let checkOutData = JSON.parse(localStorage.getItem('checkOuts')) || [];
+            let tableBody = document.getElementById("reportTable");
+            tableBody.innerHTML = "";
+
+            checkInData.forEach((entry, index) => {
+                let entryMonth = new Date(entry.date).getMonth();
+                if (entryMonth == selectedMonth) {
+                    let row = document.createElement("tr");
+                    let checkOutEntry = checkOutData.find(e => e.username === entry.username && e.date === entry.date);
+                    let checkInClass = entry.time <= "09:00 AM" ? "success" : "late";
+                    let checkOutClass = checkOutEntry && checkOutEntry.time >= "05:00 PM" ? "success" : "late";
+
+                    row.innerHTML = `
+                        <td>${entry.username}</td>
+                        <td class="${checkInClass}">${entry.time}</td>
+                        <td class="${checkOutEntry ? checkOutClass : 'late'}">
+                            ${checkOutEntry ? checkOutEntry.time : "Not Checked Out"}
+                        </td>
+                        <td>${entry.date}</td>
+                        <td><button onclick="deleteRow(${index})">Delete</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+        }
+
+        function deleteRow(index) {
+            let checkInData = JSON.parse(localStorage.getItem('checkIns')) || [];
+            checkInData.splice(index, 1);
+            localStorage.setItem('checkIns', JSON.stringify(checkInData));
+            loadReport();
+        }
+
+        document.addEventListener("DOMContentLoaded", loadReport);
+    </script>
+</body>
+</html>

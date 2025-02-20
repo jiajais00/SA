@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+        }
+
+        .current-time {
+            font-size: 1.5rem;
+            color: #34495e;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin: 10px;
+            width: 220px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Attendance</h1>
+        <div class="current-time" id="currentTime">Loading time...</div>
+
+        <button class="button" id="checkInButton" disabled>Check In</button>
+        <button class="button" id="checkOutButton" disabled>Check Out</button>
+
+        <div class="message" id="message">Checking WiFi connection...</div>
+    </div>
+
+    <script>
+        const checkInButton = document.getElementById('checkInButton');
+        const checkOutButton = document.getElementById('checkOutButton');
+        const message = document.getElementById('message');
+        const currentTimeDisplay = document.getElementById('currentTime');
+
+        // Office WiFi IP range (Example: 192.168.1.x)
+        const officeIPRange = "192.168.1.";
+
+        // Update time every second
+        setInterval(() => {
+            const now = new Date();
+            currentTimeDisplay.textContent = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Kuala_Lumpur' });
+        }, 1000);
+
+        // Function to check user's IP address
+        async function checkUserIP() {
+            try {
+                const response = await fetch("https://api64.ipify.org?format=json");
+                const data = await response.json();
+                const userIP = data.ip;
+
+                console.log("User IP:", userIP);
+
+                if (userIP.startsWith(officeIPRange)) {
+                    message.textContent = "Connected to Office WiFi ✅";
+                    message.style.color = "green";
+                    checkInButton.disabled = false;
+                    checkOutButton.disabled = false;
+                } else {
+                    message.textContent = "You are NOT connected to Office WiFi ❌";
+                    message.style.color = "red";
+                    checkInButton.disabled = true;
+                    checkOutButton.disabled = true;
+                }
+            } catch (error) {
+                message.textContent = "Error checking WiFi connection!";
+                message.style.color = "red";
+            }
+        }
+
+        checkUserIP();
+
+        checkInButton.addEventListener('click', () => {
+            message.textContent = "Check-In successful!";
+            message.style.color = 'green';
+        });
+
+        checkOutButton.addEventListener('click', () => {
+            message.textContent = "Check-Out successful!";
+            message.style.color = 'green';
+        });
+    </script>
+</body>
+</html>

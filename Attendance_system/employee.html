@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee List</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f7fb;
+      color: #333;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      background-color: #212529;
+      color: white;
+      padding: 25px 15px; /* Increased padding for height */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      height: 90px; /* Adjusted height */
+    }
+
+    .header h1 {
+      font-size: 24px; /* Larger font size */
+      margin: 0;
+      flex-grow: 1; /* Ensures title stays centered */
+    }
+
+    .header p {
+      font-size: 16px; /* Adjusted subtitle size */
+      margin: 5px 0 0 0;
+    }
+
+      .back-button {
+      position: absolute;
+      left: 20px;
+      top: 25px;
+      font-size: 18px;
+      color: white;
+      text-decoration: underline;
+      font-weight: normal; /* Change to normal for less boldness */
+      text-underline-offset: 3px; /* Adjusts the space between text and underline */
+    }
+
+    .back-button:hover {
+      color: #007bff;
+      text-decoration: none; /* Removes underline on hover */
+    }
+
+
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .department-section {
+      margin-top: 40px;
+      padding: 10px;
+    }
+
+    .department-section h3 {
+      color: #343a40;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .employee-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+      gap: 20px;
+    }
+
+    .employee-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      width: 220px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .employee-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .employee-card img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 3px solid #007bff;
+    }
+
+    .footer {
+      background-color: #343a40;
+      color: white;
+      padding: 15px;
+      margin-top: 30px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+ <div class="header">
+    <a href="homepage.html" class="back-button">Back</a>
+    <div>
+      <h1>Farmasi Everlife Employees</h1>
+      <p>"Meet the dedicated team behind the success of our company"</p>
+    </div>
+</div>
+
+  <div class="container">
+    <div class="employee-list" id="employeeList"></div>
+  </div>
+
+  <div class="footer">
+    &copy; 2025 Employee Management System. All Rights Reserved.
+  </div>
+
+  <script>
+    window.onload = function () {
+      const employeeListContainer = document.getElementById('employeeList');
+      const employees = JSON.parse(localStorage.getItem('employees')) || [];
+
+      function displayEmployees() {
+        employeeListContainer.innerHTML = '';
+
+        // Grouping employees by department
+        const departments = ['Office', 'Intern', 'Warehouse'];
+
+        departments.forEach(department => {
+          const section = document.createElement('div');
+          section.classList.add('department-section');
+          section.innerHTML = `<h3>${department}</h3><div class="employee-grid"></div>`;
+          employeeListContainer.appendChild(section);
+
+          const grid = section.querySelector('.employee-grid');
+          employees
+            .filter(emp => emp.department === department)
+            .forEach(emp => {
+              const empCard = document.createElement('div');
+              empCard.classList.add('employee-card');
+              empCard.innerHTML = `
+                <img src="${emp.image}" alt="${emp.name}">
+                <h4>${emp.name}</h4>
+                <p>${emp.role}</p>
+              `;
+              grid.appendChild(empCard);
+            });
+        });
+      }
+
+      displayEmployees();
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Attendance</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
+        .container { margin-top: 50px; padding: 20px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
+        #reader { width: 300px; margin: auto; }
+        button { padding: 10px 15px; margin-top: 10px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Employee QR Check-in</h2>
+        <div id="reader"></div>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        const VALID_QR_CODE = "COMPANY-QR-123"; // Fixed QR Code Value
+
+        function onScanSuccess(decodedText) {
+            if (decodedText === VALID_QR_CODE) {
+                let now = new Date();
+                let checkInTime = now.toLocaleTimeString();
+                localStorage.setItem("attendance", JSON.stringify({ date: now.toDateString(), time: checkInTime }));
+                document.getElementById("status").innerHTML = "<span style='color: green;'>Check-in Successful at " + checkInTime + "</span>";
+            } else {
+                document.getElementById("status").innerHTML = "<span style='color: red;'>Invalid QR Code</span>";
+            }
+        }
+
+        new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }).render(onScanSuccess);
+    </script>
+
+</body>
+</html>

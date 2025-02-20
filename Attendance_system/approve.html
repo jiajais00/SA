@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Leave Approval</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0a2540; /* Dark Blue Background */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .approval-container {
+            width: 90%;
+            max-width: 500px;
+            background-color: rgba(255, 255, 255, 0.1); /* Glassmorphism */
+            padding: 30px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .approved-icon {
+            content: url('https://image.shutterstock.com/image-vector/check-mark-icon-260nw-1672998781.jpg'); /* Check Icon */
+        }
+
+        .rejected-icon {
+            content: url('https://image.shutterstock.com/image-vector/cross-mark-icon-260nw-1672998782.jpg'); /* Cross Icon */
+        }
+
+        .pending-icon {
+            content: url('https://image.shutterstock.com/image-vector/hourglass-icon-260nw-1672998783.jpg'); /* Hourglass Icon */
+        }
+
+        .status-message {
+            font-size: 1.2rem;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background-color: #1e90ff; /* Light Blue Button */
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #0d5bb5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="approval-container">
+        <h1>Leave Approval Status</h1>
+
+        <!-- Approval Status Section -->
+        <div class="status-icon" id="statusIcon">
+            <!-- Icon will be dynamically updated by JavaScript -->
+        </div>
+        <div class="status-message" id="statusMessage">
+            <!-- Message will be dynamically updated by JavaScript -->
+        </div>
+
+        <!-- Back Button to return to Apply page -->
+        <button class="back-btn" onclick="window.location.href='apply.html'">Back to Apply</button>
+    </div>
+
+    <script>
+        // Simulated Approval Status from Admin (Jihajais)
+        const approvalStatus = "pending"; // Can be "approved", "rejected", or "pending"
+
+        // Grab the status icon and message elements
+        const statusIconDiv = document.getElementById('statusIcon');
+        const statusMessageDiv = document.getElementById('statusMessage');
+
+        // Set the status icon and message based on approvalStatus
+        if (approvalStatus === "approved") {
+            statusIconDiv.classList.add("approved-icon");
+            statusMessageDiv.innerText = "Your leave has been approved!";
+        } else if (approvalStatus === "rejected") {
+            statusIconDiv.classList.add("rejected-icon");
+            statusMessageDiv.innerText = "Your leave has been rejected.";
+        } else {
+            statusIconDiv.classList.add("pending-icon");
+            statusMessageDiv.innerText = "Your leave request is still pending approval.";
+        }
+    </script>
+
+</body>
+</html>

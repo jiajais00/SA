@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2024 Work Schedule Calendar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #2C3E50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #ECF0F1;
+        }
+
+        .calendar-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 1800px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .month {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .days-of-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .day-header {
+            background-color: #34495E;
+            padding: 10px;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .day {
+            background-color: #34495E;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .day:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .off-day {
+            background-color: #1ABC9C;
+        }
+
+        .working-day {
+            background-color: #2980B9;
+        }
+
+        .shift-icon {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #E74C3C;
+            color: #fff;
+            text-align: center;
+            line-height: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .legend {
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .button-container {
+            margin-top: 30px;
+        }
+
+        .button {
+            background-color: #1ABC9C;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #16A085;
+        }
+
+        .back-button {
+            background-color: transparent;
+            color: #ECF0F1;
+            font-size: 1.5rem;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .back-button:hover {
+            color: #1ABC9C;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calendar-container">
+    <!-- Back Button -->
+    <button class="back-button" onclick="goToHomePage()">← Back to Homepage</button>
+
+    <h1>2024 Work Schedule Calendar</h1>
+    <div class="month" id="current-month">October 2024</div>
+    <div class="days-of-week">
+        <div class="day-header">Sun</div>
+        <div class="day-header">Mon</div>
+        <div class="day-header">Tue</div>
+        <div class="day-header">Wed</div>
+        <div class="day-header">Thu</div>
+        <div class="day-header">Fri</div>
+        <div class="day-header">Sat</div>
+    </div>
+    <div class="calendar" id="calendar"></div>
+    <div class="legend">
+        <p><span style="color: #1ABC9C;">Turquoise</span> is off day, <span style="color: #2980B9;">Light blue</span> is work</p>
+    </div>
+    <div class="button-container">
+        <button class="button" onclick="previousMonth()">Previous</button>
+        <button class="button" onclick="nextMonth()">Next</button>
+    </div>
+</div>
+
+<script>
+    const months = {
+        "October 2024": { days: 31, startDay: 2 },
+        "November 2024": { days: 30, startDay: 5 },
+        "December 2024": { days: 31, startDay: 1 } // December added with shifts
+    };
+
+    const shifts = [
+        { saturday: ["A", "D"], sunday: ["M", "J"] }, // Week 1
+        { saturday: ["M", "J"], sunday: ["A", "D"] }, // Week 2
+        { saturday: ["A", "D"], sunday: ["M", "J"] }, // Week 3
+        { saturday: ["M", "J"], sunday: ["A", "D"] }, // Week 4
+        { saturday: ["A", "D"], sunday: ["M", "J"] }, // Week 5 (for December)
+    ];
+
+    let currentMonth = "October 2024";
+
+    function renderCalendar(month) {
+        const calendar = document.getElementById('calendar');
+        document.getElementById('current-month').innerText = month;
+        calendar.innerHTML = '';
+        const daysInMonth = months[month].days;
+        const startDay = months[month].startDay;
+
+        for (let i = 0; i < startDay; i++) {
+            calendar.innerHTML += `<div class="day"></div>`;
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(`${month.split(" ")[0]} ${day}, 2024`);
+            const isWeekend = date.getDay() === 6 || date.getDay() === 0;
+            const weekIndex = Math.floor((day - 1) / 7) % 5; // Adjust for the 5th week in December
+            let content = `<div class="day">${day}</div>`;
+
+            if (isWeekend) {
+                const shift = date.getDay() === 6 ? shifts[weekIndex].saturday : shifts[weekIndex].sunday;
+                const dayType = date.getDay() === 6 ? "off-day" : "working-day";
+                const shiftIcons = shift.map(person => `<span class="shift-icon">${person}</span>`).join('');
+                content = `<div class="day ${dayType}">${day}<br>${shiftIcons}</div>`;
+            }
+            calendar.innerHTML += content;
+        }
+    }
+
+    function previousMonth() {
+        if (currentMonth === "October 2024") {
+            currentMonth = "September 2024";
+        } else if (currentMonth === "November 2024") {
+            currentMonth = "October 2024";
+        } else if (currentMonth === "December 2024") {
+            currentMonth = "November 2024";
+        }
+        renderCalendar(currentMonth);
+    }
+
+    function nextMonth() {
+        if (currentMonth === "October 2024") {
+            currentMonth = "November 2024";
+        } else if (currentMonth === "November 2024") {
+            currentMonth = "December 2024";
+        } else if (currentMonth === "December 2024") {
+            currentMonth = "October 2024";
+        }
+        renderCalendar(currentMonth);
+    }
+
+    // Function to navigate to the homepage
+    function goToHomePage() {
+        window.location.href = "index.html"; // Adjust to your homepage path
+    }
+
+    renderCalendar(currentMonth);
+</script>
+
+</body>
+</html>

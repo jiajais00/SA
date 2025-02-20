@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Employee Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f7fb;
+      color: #333;
+    }
+    header, footer {
+      background-color: #212529;
+      color: white;
+      text-align: center;
+      padding: 8px 18px;
+    }
+    .back-button {
+      color: #ffffff;
+      font-size: 1.1rem;
+      text-decoration: underline;
+      position: absolute;
+      left: 20px;
+      top: 25px;
+    }
+    .container {
+      width: 80%;
+      margin: 30px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .employee-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      width: 220px;
+      text-align: center;
+    }
+    .employee-card img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+    .employee-card button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      margin-top: 5px;
+      border-radius: 5px;
+      width: 100%;
+    }
+    .employee-card button:hover {
+      background-color: #0056b3;
+    }
+    .employee-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="adminhomepage.html" class="back-button">Back</a>
+    <h1>Employee Management</h1>
+    <p>"Manage and track employee records, roles, and attendance efficiently."</p>
+  </header>
+
+  <div class="container">
+    <!-- Add Employee Form -->
+    <section>
+      <h2>Add Employee</h2>
+      <input type="text" id="nameInput" placeholder="Enter Name" required>
+      <input type="text" id="roleInput" placeholder="Enter Role" required>
+      <select id="departmentInput">
+        <option value="Office">Office</option>
+        <option value="Intern">Intern</option>
+        <option value="Warehouse">Warehouse</option>
+      </select>
+      <input type="file" id="imageInput" accept="image/*">
+      <button onclick="addEmployee()">Add Employee</button>
+    </section>
+
+    <!-- Employee List -->
+    <section>
+      <h2>Employee List</h2>
+      <div id="employeeList"></div>
+    </section>
+  </div>
+
+  <footer>
+    &copy; 2025 Employee Management System. All Rights Reserved.
+  </footer>
+
+  <script>
+    window.onload = function () {
+      const employeeListContainer = document.getElementById('employeeList');
+      let employees = JSON.parse(localStorage.getItem('employees')) || [];
+
+      function displayEmployees() {
+        employeeListContainer.innerHTML = '';
+        const departments = ['Office', 'Intern', 'Warehouse'];
+
+        departments.forEach(department => {
+          const section = document.createElement('div');
+          section.innerHTML = `<h3>${department}</h3><div class="employee-grid"></div>`;
+          employeeListContainer.appendChild(section);
+
+          const grid = section.querySelector('.employee-grid');
+          employees.forEach((emp, index) => {
+            if (emp.department === department) {
+              const empCard = document.createElement('div');
+              empCard.classList.add('employee-card');
+              empCard.innerHTML = `
+                <img src="${emp.image || 'placeholder.jpg'}" alt="${emp.name}">
+                <h4>${emp.name}</h4>
+                <p>${emp.role}</p>
+                <button onclick="editEmployee(${index})">Edit</button>
+                <button onclick="deleteEmployee(${index})">Delete</button>
+              `;
+              grid.appendChild(empCard);
+            }
+          });
+        });
+      }
+
+      window.addEmployee = function () {
+        const name = document.getElementById("nameInput").value.trim();
+        const role = document.getElementById("roleInput").value.trim();
+        const department = document.getElementById("departmentInput").value;
+        const imageInput = document.getElementById("imageInput").files[0];
+
+        if (!name || !role) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const imageUrl = e.target.result;
+
+          employees.push({ name, role, department, image: imageUrl });
+          localStorage.setItem('employees', JSON.stringify(employees));
+          displayEmployees();
+
+          document.getElementById("nameInput").value = "";
+          document.getElementById("roleInput").value = "";
+          document.getElementById("imageInput").value = "";
+        };
+
+        if (imageInput) {
+          reader.readAsDataURL(imageInput);
+        } else {
+          employees.push({ name, role, department, image: 'placeholder.jpg' });
+          localStorage.setItem('employees', JSON.stringify(employees));
+          displayEmployees();
+        }
+      };
+
+      window.editEmployee = function (index) {
+        let selectedEmployee = employees[index];
+
+        const newName = prompt("Enter new name:", selectedEmployee.name);
+        const newRole = prompt("Enter new role:", selectedEmployee.role);
+        const newDepartment = prompt("Enter new department (Office, Intern, Warehouse):", selectedEmployee.department);
+        const newImageInput = document.createElement("input");
+        newImageInput.type = "file";
+        newImageInput.accept = "image/*";
+
+        newImageInput.onchange = function () {
+          const file = newImageInput.files[0];
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            selectedEmployee.image = e.target.result;
+            localStorage.setItem('employees', JSON.stringify(employees));
+            displayEmployees();
+          };
+          reader.readAsDataURL(file);
+        };
+
+        if (newName && newRole && ["Office", "Intern", "Warehouse"].includes(newDepartment)) {
+          selectedEmployee.name = newName;
+          selectedEmployee.role = newRole;
+          selectedEmployee.department = newDepartment;
+          localStorage.setItem('employees', JSON.stringify(employees));
+          displayEmployees();
+        }
+
+        newImageInput.click();
+      };
+
+      window.deleteEmployee = function (index) {
+        if (confirm("Are you sure you want to delete this employee?")) {
+          employees.splice(index, 1);
+          localStorage.setItem('employees', JSON.stringify(employees));
+          displayEmployees();
+        }
+      };
+
+      displayEmployees();
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef2f7;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 70px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+
+        h2 {
+            color: #333;
+            font-weight: 600;
+        }
+
+        #current-time {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: darkblue;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 70%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .check-in, .check-out {
+            background-color: #333;
+            color: white;
+        }
+
+        .back {
+            background: none;
+            color: black;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+            border: none;
+            margin-top: 15px;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .green { color: #28a745; }
+        .red { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Employee Attendance</h2>
+        <p id="current-time"></p>
+        <input type="text" id="username" placeholder="Enter your username">
+        <button class="check-in" onclick="checkIn()">Check In</button>
+        <button class="check-out" onclick="checkOut()">Check Out</button>
+        <p class="status" id="status"></p>
+        <button class="back" onclick="goBack()">Back</button>
+    </div>
+
+    <script>
+        function updateTime() {
+            let now = new Date();
+            let options = { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuala_Lumpur' };
+            document.getElementById("current-time").innerText = "Current Time: " + now.toLocaleTimeString("en-US", options);
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime(); 
+
+        function checkIn() {
+            let username = document.getElementById("username").value.trim();
+            if (!username) {
+                alert("Please enter your username!");
+                return;
+            }
+
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    let userLat = position.coords.latitude;
+                    let userLng = position.coords.longitude;
+
+                    // Allowed location: 10, Lorong Kucai 2, Lunas, Kedah
+                    let allowedLat = 5.480192;  // Replace with actual latitude
+                    let allowedLng = 100.544331; // Replace with actual longitude
+
+                    let distance = getDistance(userLat, userLng, allowedLat, allowedLng);
+
+                    if (distance > 0.1) { // 100 meters tolerance
+                        alert("You must be at the allowed location to check in.");
+                        return;
+                    }
+
+                    let now = new Date();
+                    let checkInTime = now.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: true });
+                    let statusElement = document.getElementById("status");
+
+                    statusElement.innerText = `Checked in at ${checkInTime}`;
+                    statusElement.className = "status green";
+
+                    let checkInData = JSON.parse(localStorage.getItem('checkIns')) || [];
+                    checkInData.push({ username, time: checkInTime, date: now.toISOString().split("T")[0] });
+                    localStorage.setItem('checkIns', JSON.stringify(checkInData));
+                },
+                function () {
+                    alert("Unable to retrieve your location.");
+                }
+            );
+        }
+
+        function checkOut() {
+            let username = document.getElementById("username").value.trim();
+            if (!username) {
+                alert("Please enter your username!");
+                return;
+            }
+
+            let now = new Date();
+            let checkOutTime = now.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: true });
+            let statusElement = document.getElementById("status");
+
+            if (now.getHours() >= 17) {
+                statusElement.innerText = `Successful Check-out at ${checkOutTime}`;
+                statusElement.className = "status green";
+            } else {
+                statusElement.innerText = `Early Check-out at ${checkOutTime}`;
+                statusElement.className = "status red";
+            }
+
+            let checkOutData = JSON.parse(localStorage.getItem('checkOuts')) || [];
+            checkOutData.push({ username, time: checkOutTime, date: now.toISOString().split("T")[0] });
+            localStorage.setItem('checkOuts', JSON.stringify(checkOutData));
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // Haversine formula to calculate distance between two coordinates
+        function getDistance(lat1, lon1, lat2, lon2) {
+            function toRad(value) {
+                return (value * Math.PI) / 180;
+            }
+            let R = 6371; // Earth's radius in km
+            let dLat = toRad(lat2 - lat1);
+            let dLon = toRad(lon2 - lon1);
+            let a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        }
+    </script>
+</body>
+</html>
